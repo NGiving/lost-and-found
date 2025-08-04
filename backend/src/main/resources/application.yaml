@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: lostandfound
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+cloudflare:
+  r2:
+    endpoint: ${R2_BUCKET_ENDPOINT}
+    accessKeyId: ${R2_BUCKET_ACCESS_KEY_ID}
+    secretAccessKey: ${R2_BUCKET_SECRET_ACCESS_KEY}
+    bucket: ${R2_BUCKET}
+    tokenValue: ${R2_BUCKET_TOKEN_VALUE}
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 1d
