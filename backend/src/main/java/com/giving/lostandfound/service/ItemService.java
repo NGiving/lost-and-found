@@ -16,6 +16,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class ItemService {
@@ -36,6 +37,18 @@ public class ItemService {
 
     public List<ItemDto> getAllItems() {
         return itemRepository.findAll().stream().map(this::mapToDto).toList();
+    }
+
+    public List<ItemDto> getItemsByClaimedByIsNull() {
+        return itemRepository.findByClaimedByIsNull().stream().map(this::mapToDto).toList();
+    }
+
+    /* Returns items unclaimed not including self reports (for users) */
+    public List<ItemDto> getItemsUnclaimed(Long userId) {
+        return itemRepository.findAll((root, cq, cb) -> cb.and(
+                cb.equal(root.get("status"), ItemStatus.UNCLAIMED),
+                cb.notEqual(root.get("filledBy").get("id"), userId)
+        )).stream().map(this::mapToDto).toList();
     }
 
     public List<ItemDto> getItemsByFilledBy(Long userId) {
@@ -106,6 +119,28 @@ public class ItemService {
                 })
                 .toList();
         return itemRepository.saveAll(items).stream().map(this::mapToDto).toList();
+    }
+
+    public ItemDto claimItem(Long itemId, Long userId) {
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ItemNotFoundException(itemId));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        if (item.getStatus() != ItemStatus.UNCLAIMED) {
+            throw new IllegalStateException("Item already claimed");
+        }
+
+        if (Objects.equals(item.getFilledBy().getId(), userId)) {
+            throw new IllegalStateException("Cannot self claim");
+        }
+
+        item.setClaimedBy(user);
+        item.setStatus(ItemStatus.CLAIMED);
+        item.setDateClaimed(LocalDateTime.now());
+
+        return mapToDto(itemRepository.save(item));
     }
 
     public ItemDto replaceItem(Long id, ItemDto itemDto) {

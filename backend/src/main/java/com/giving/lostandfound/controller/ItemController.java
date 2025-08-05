@@ -36,6 +36,13 @@ public class ItemController {
         return ResponseEntity.ok(itemService.getAllItems());
     }
 
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/unclaimed")
+    public ResponseEntity<List<ItemDto>> getUnclaimedItems(Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        return ResponseEntity.ok(itemService.getItemsUnclaimed(userDetails.getId()));
+    }
+
     @GetMapping("/my")
     public ResponseEntity<List<ItemDto>> getMyItems(Authentication authentication) {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
@@ -73,6 +80,12 @@ public class ItemController {
 
         List<ItemDto> createdItems = itemService.createItems(userId, itemDtos);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdItems);
+    }
+
+    @PostMapping("/{id}/claim")
+    public ResponseEntity<ItemDto> claimItem(@PathVariable Long id, Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        return ResponseEntity.ok(itemService.claimItem(id, userDetails.getId()));
     }
 
     @PreAuthorize("@itemService.isOwner(#id, principal.id) or hasRole('ADMIN')")

@@ -26,7 +26,7 @@ export default function ItemList() {
   const fetchItems = () => {
     setLoading(true);
     api
-      .get("/items", { withCredentials: true })
+      .get("/items/unclaimed", { withCredentials: true })
       .then((res) => setItems(res.data))
       .catch((err) => {
         setError("Failed to fetch items");
@@ -66,6 +66,14 @@ export default function ItemList() {
         console.error(err);
       })
       .finally(() => setLoading(false));
+  };
+
+  const handleClaim = async (id: number) => {
+    try {
+      await api.post(`/items/${id}/claim`, { withCredentials: true });
+    } catch (error) {
+      console.error("Failed to claim item", error);
+    }
   };
 
   if (loading) return <CircularProgress />;
@@ -109,7 +117,10 @@ export default function ItemList() {
             key={item.id}
             size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
           >
-            <ItemCard {...item} />
+            <ItemCard
+              {...item}
+              onClaim={handleClaim}
+            />
           </Grid>
         ))}
       </Grid>

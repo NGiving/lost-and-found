@@ -67,7 +67,7 @@ export default function Filters({
           inputLabel: { shrink: true },
           htmlInput: { max: dateBefore },
         }}
-        type="date"
+        type="datetime-local"
         label="Date Found After"
         value={dateAfter}
         onChange={(e) => setDateAfter(e.target.value)}
@@ -78,7 +78,7 @@ export default function Filters({
           inputLabel: { shrink: true },
           htmlInput: { min: dateAfter },
         }}
-        type="date"
+        type="datetime-local"
         label="Date Found Before"
         value={dateBefore}
         onChange={(e) => setDateBefore(e.target.value)}

@@ -1,4 +1,3 @@
-import type { Image } from "./image";
 import type { ItemStatus } from "./itemStatus";
 
 export interface Item {
@@ -11,5 +10,10 @@ export interface Item {
   dateClaimed: string | null;
   filledByUserId: number;
   claimedByUserId: number | null;
-  images: Image[];
+  images: ItemImage[];
+}
+
+export interface ItemImage {
+  id: number;
+  imageUrl: string;
 }

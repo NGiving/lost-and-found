@@ -1,48 +1,37 @@
-import {
-  AppBar,
-  Toolbar,
-  IconButton,
-  Typography,
-  Button,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-} from "@mui/material";
+import { AppBar, Toolbar, Typography, IconButton, Button } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import { useState } from "react";
 
-export default function Navbar({ onLogout }: { onLogout: () => void }) {
-  const [drawerOpen, setDrawerOpen] = useState(false);
+type NavbarProps = {
+  onLogout: () => void;
+  isOpen: boolean;
+  toggleDrawer: (isOpen: boolean) => void;
+};
 
-  const toggleDrawer = (open: boolean) => () => {
-    setDrawerOpen(open);
-  };
-
+export default function Navbar({
+  onLogout,
+  isOpen,
+  toggleDrawer,
+}: NavbarProps) {
   return (
     <AppBar
-      position="static"
-      sx={{ backgroundColor: "#1976d2" }}
+      sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, position: "fixed" }}
     >
       <Toolbar>
         <IconButton
+          onClick={() => toggleDrawer(!isOpen)}
           edge="start"
           color="inherit"
           aria-label="menu"
-          onClick={toggleDrawer(true)}
           sx={{ mr: 2 }}
         >
           <MenuIcon />
         </IconButton>
-
         <Typography
           variant="h6"
-          component="div"
           sx={{ flexGrow: 1 }}
         >
           Lost & Found
         </Typography>
-
         <Button
           color="inherit"
           onClick={onLogout}
@@ -50,24 +39,6 @@ export default function Navbar({ onLogout }: { onLogout: () => void }) {
           Logout
         </Button>
       </Toolbar>
-
-      <List>
-        <ListItem disablePadding>
-          <ListItemButton>
-            <ListItemText primary="Home" />
-          </ListItemButton>
-        </ListItem>
-        <ListItem disablePadding>
-          <ListItemButton>
-            <ListItemText primary="My Items" />
-          </ListItemButton>
-        </ListItem>
-        <ListItem disablePadding>
-          <ListItemButton>
-            <ListItemText primary="Report Item" />
-          </ListItemButton>
-        </ListItem>
-      </List>
     </AppBar>
   );
 }

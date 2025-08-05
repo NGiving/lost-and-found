@@ -31,9 +31,7 @@ export default function LoginPage() {
 
     try {
       await api.post("/auth/login", { email, password });
-
       await dispatch(fetchUserProfile()).unwrap();
-
       navigate("/dashboard");
     } catch (err) {
       let msg = "Unexpected error";
@@ -48,15 +46,28 @@ export default function LoginPage() {
 
   return (
     <Container maxWidth="sm">
-      <Paper elevation={3} sx={{ p: 4, mt: 8 }}>
-        <Typography variant="h4" gutterBottom>
+      <Paper
+        elevation={3}
+        sx={{ p: 4, mt: 8 }}
+      >
+        <Typography
+          variant="h4"
+          gutterBottom
+        >
           Campus Lost & Found
         </Typography>
-        <Typography variant="h6" gutterBottom>
+        <Typography
+          variant="h6"
+          gutterBottom
+        >
           Login
         </Typography>
 
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{ mt: 2 }}
+        >
           <TextField
             label="Email"
             fullWidth
@@ -77,7 +88,10 @@ export default function LoginPage() {
           />
 
           {error && (
-            <Alert severity="error" sx={{ mt: 2 }}>
+            <Alert
+              severity="error"
+              sx={{ mt: 2 }}
+            >
               {error}
             </Alert>
           )}

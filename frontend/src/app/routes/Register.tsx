@@ -12,18 +12,23 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import api from "../../lib/api";
 import axios from "axios";
-import { useAppDispatch } from "../../hooks/appHooks";
-import { fetchUserProfile } from "../../features/user/userSlice";
 
 export default function RegisterPage() {
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
-
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+  });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,11 +36,13 @@ export default function RegisterPage() {
     setError(null);
 
     try {
-      await api.post("/auth/register", { name, email, password });
+      await api.post("/auth/register", formData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-      await dispatch(fetchUserProfile()).unwrap();
-
-      navigate("/dashboard");
+      navigate("/login");
     } catch (err: unknown) {
       let msg = "Registration failed";
       if (axios.isAxiosError(err)) {
@@ -49,41 +56,66 @@ export default function RegisterPage() {
 
   return (
     <Container maxWidth="sm">
-      <Paper elevation={3} sx={{ p: 4, mt: 8 }}>
-        <Typography variant="h4" gutterBottom>
+      <Paper
+        elevation={3}
+        sx={{ p: 4, mt: 8 }}
+      >
+        <Typography
+          variant="h4"
+          gutterBottom
+        >
           Register
         </Typography>
 
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{ mt: 2 }}
+        >
           <TextField
-            label="Full Name"
+            name="firstName"
+            label="First Name"
             fullWidth
             required
             margin="normal"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={formData.firstName}
+            onChange={handleChange}
           />
           <TextField
+            name="lastName"
+            label="Last Name"
+            fullWidth
+            required
+            margin="normal"
+            value={formData.lastName}
+            onChange={handleChange}
+          />
+          <TextField
+            name="email"
             label="Email"
             type="email"
             fullWidth
             required
             margin="normal"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={formData.email}
+            onChange={handleChange}
           />
           <TextField
+            name="password"
             label="Password"
             type="password"
             fullWidth
             required
             margin="normal"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={formData.password}
+            onChange={handleChange}
           />
 
           {error && (
-            <Alert severity="error" sx={{ mt: 2 }}>
+            <Alert
+              severity="error"
+              sx={{ mt: 2 }}
+            >
               {error}
             </Alert>
           )}

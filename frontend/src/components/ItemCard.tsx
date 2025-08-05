@@ -6,13 +6,23 @@ import {
   Typography,
   IconButton,
   Box,
+  Button,
 } from "@mui/material";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import type { Item } from "../types/items";
+import { useAppSelector } from "../hooks/appHooks";
+import { useNavigate } from "react-router";
 
-export default function ItemCard(props: Item) {
+type ItemCardProps = Item & {
+  onDelete?: (id: number) => void;
+  onClaim?: (id: number) => void;
+};
+
+export default function ItemCard(props: ItemCardProps) {
   const { images } = props;
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const user = useAppSelector((state) => state.user.user);
+  const navigate = useNavigate();
 
   const handlePrev = () => {
     setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
@@ -20,6 +30,49 @@ export default function ItemCard(props: Item) {
 
   const handleNext = () => {
     setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
+  const formatItemCardButton = () => {
+    if (props.status === "UNCLAIMED" && props.filledByUserId !== user!.id) {
+      return (
+        <Button
+          sx={{ mt: 2 }}
+          variant="outlined"
+          onClick={() => props.onClaim?.(props.id)}
+        >
+          Claim
+        </Button>
+      );
+    } else if (
+      props.status === "UNCLAIMED" &&
+      props.filledByUserId === user!.id
+    ) {
+      return (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 2,
+            mt: 2,
+          }}
+        >
+          <Button
+            variant="contained"
+            onClick={() => navigate(`/my-reports/${props.id}/edit`)}
+          >
+            Edit
+          </Button>
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={() => props.onDelete?.(props.id)}
+          >
+            Delete
+          </Button>
+        </Box>
+      );
+    }
+    return null;
   };
 
   const currentImageUrl =
@@ -35,8 +88,8 @@ export default function ItemCard(props: Item) {
                 xs: 180,
                 sm: 240,
                 md: 320,
-                lg: 400,
-                xl: 500,
+                lg: 360,
+                xl: 360,
               },
             }}
             component="img"
@@ -54,8 +107,8 @@ export default function ItemCard(props: Item) {
                 xs: 180,
                 sm: 240,
                 md: 320,
-                lg: 400,
-                xl: 500,
+                lg: 360,
+                xl: 360,
               },
             }}
           >
@@ -102,15 +155,38 @@ export default function ItemCard(props: Item) {
         )}
       </Box>
 
-      <CardContent>
+      <CardContent
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          pt: 2,
+          px: 2,
+          pb: 0,
+        }}
+      >
         <Typography variant="h6">{props.name}</Typography>
-        <Typography variant="body2" mt={1}>
+        <Typography
+          variant="body2"
+          mt={1}
+        >
           Location: {props.location}
         </Typography>
         <Typography variant="body2">
-          Date Found: {new Date(props.dateReported).toLocaleDateString()}
+          <Typography
+            variant="body2"
+            component="span"
+          >
+            {props.status === "UNCLAIMED"
+              ? `Date Found: ${new Date(
+                  props.dateReported
+                ).toLocaleDateString()}`
+              : `Date Claimed: ${new Date(
+                  props.dateClaimed!
+                ).toLocaleDateString()}`}
+          </Typography>
         </Typography>
-        <Typography variant="body2">Status: {props.status}</Typography>
+        {formatItemCardButton()}
       </CardContent>
     </Card>
   );
