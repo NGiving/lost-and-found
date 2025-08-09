@@ -5,7 +5,7 @@ export interface Item {
   name: string;
   description: string;
   location: string;
-  dateReported: Date;
+  dateReported: string;
   status: ItemStatus;
   dateClaimed: string | null;
   filledByUserId: number;

@@ -2,6 +2,8 @@ package com.giving.lostandfound.controller;
 
 import com.giving.lostandfound.auth.CustomUserDetails;
 import com.giving.lostandfound.dto.ItemDto;
+import com.giving.lostandfound.enums.RoleName;
+import com.giving.lostandfound.model.Role;
 import com.giving.lostandfound.service.ItemService;
 import com.giving.lostandfound.service.UserService;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -36,11 +38,16 @@ public class ItemController {
         return ResponseEntity.ok(itemService.getAllItems());
     }
 
-    @PreAuthorize("hasRole('USER')")
     @GetMapping("/unclaimed")
     public ResponseEntity<List<ItemDto>> getUnclaimedItems(Authentication authentication) {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         return ResponseEntity.ok(itemService.getItemsUnclaimed(userDetails.getId()));
+    }
+
+    @GetMapping("/pending")
+    public ResponseEntity<List<ItemDto>> getPendingItems(Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        return ResponseEntity.ok(itemService.getItemsPending());
     }
 
     @GetMapping("/my")
@@ -97,8 +104,11 @@ public class ItemController {
 
     @PreAuthorize("@itemService.isOwner(#id, principal.id) or hasRole('ADMIN')")
     @PatchMapping("/{id}")
-    public ResponseEntity<ItemDto> patchItem(@PathVariable Long id, @RequestBody ItemDto itemDto) {
-        ItemDto updatedItem = itemService.patchItem(id, itemDto);
+    public ResponseEntity<ItemDto> patchItem(@PathVariable Long id, @RequestBody ItemDto itemDto, Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        boolean isAdmin = RoleName.valueOf(userDetails.getRole()) == RoleName.ROLE_ADMIN;
+
+        ItemDto updatedItem = itemService.patchItem(id, itemDto, isAdmin);
         return ResponseEntity.ok(updatedItem);
     }
 

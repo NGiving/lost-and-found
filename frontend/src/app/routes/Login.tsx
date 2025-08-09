@@ -7,7 +7,9 @@ import {
   Alert,
   CircularProgress,
   Paper,
+  Link,
 } from "@mui/material";
+import { Link as RouterLink } from "react-router";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useAppDispatch } from "../../hooks/appHooks";
@@ -120,6 +122,13 @@ export default function LoginPage() {
             )}
           </Box>
         </Box>
+        <Link
+          sx={{ mt: 2, display: "block" }}
+          component={RouterLink}
+          to="/register"
+        >
+          Sign Up
+        </Link>
       </Paper>
     </Container>
   );

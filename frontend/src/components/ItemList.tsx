@@ -71,6 +71,7 @@ export default function ItemList() {
   const handleClaim = async (id: number) => {
     try {
       await api.post(`/items/${id}/claim`, { withCredentials: true });
+      setItems((prevItems) => prevItems.filter((item) => item.id !== id));
     } catch (error) {
       console.error("Failed to claim item", error);
     }

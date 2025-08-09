@@ -4,6 +4,8 @@ import Register from "./routes/Register";
 import Dashboard from "./routes/Dashboard";
 import Reports from "./routes/Reports";
 import EditItem from "./routes/EditItem";
+import AdminLogin from "./routes/AdminLogin";
+import AdminDashboard from "./routes/AdminDashboard";
 import { useAppSelector } from "../hooks/appHooks";
 import type { RootState } from "../stores";
 import NewItem from "./routes/NewItem";
@@ -38,6 +40,41 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   ) : (
     <Navigate
       to="/login"
+      replace
+    />
+  );
+}
+
+function AdminPublicRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, user } = useAppSelector(
+    (state: RootState) => state.user
+  );
+
+  if (isAuthenticated && user?.role === "ROLE_ADMIN") {
+    return (
+      <Navigate
+        to="/admin/dashboard"
+        replace
+      />
+    );
+  }
+  return <>{children}</>;
+}
+
+function ProtectedAdminRoute({ children }: { children: React.ReactNode }) {
+  const { user, isAuthenticated, status } = useAppSelector(
+    (state: RootState) => state.user
+  );
+
+  if (status === "loading" || (status === "idle" && !user)) {
+    return <div>Loading...</div>;
+  }
+
+  return isAuthenticated && user?.role === "ROLE_ADMIN" ? (
+    <>{children}</>
+  ) : (
+    <Navigate
+      to="/admin/login"
       replace
     />
   );
@@ -97,6 +134,23 @@ export default function AppRouter() {
             <ProtectedRoute>
               <EditItem />
             </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/login"
+          element={
+            <AdminPublicRoute>
+              <AdminLogin />
+            </AdminPublicRoute>
+          }
+        />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedAdminRoute>
+              <AdminDashboard />
+            </ProtectedAdminRoute>
           }
         />
 

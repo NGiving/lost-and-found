@@ -7,52 +7,40 @@ import {
   Alert,
   CircularProgress,
   Paper,
-  Link,
 } from "@mui/material";
-import { Link as RouterLink } from "react-router";
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { useAppDispatch } from "../../hooks/appHooks";
+import { fetchUserProfile } from "../../features/user/userSlice";
 import api from "../../lib/api";
 import axios from "axios";
 
-export default function RegisterPage() {
+export default function AdminLogin() {
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-  });
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
+    setLoading(true);
 
     try {
-      await api.post("/auth/register", formData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      navigate("/login");
-    } catch (err: unknown) {
-      let msg = "Registration failed";
+      await api.post("/auth/login", { email, password });
+      await dispatch(fetchUserProfile()).unwrap();
+      navigate("/admin/dashboard");
+    } catch (err) {
+      let msg = "Unexpected error";
       if (axios.isAxiosError(err)) {
         msg = err.response?.data?.message || err.message;
-      } else if (err instanceof Error) {
-        msg = err.message;
       }
       setError(msg);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -66,7 +54,13 @@ export default function RegisterPage() {
           variant="h4"
           gutterBottom
         >
-          Register
+          Campus Lost & Found
+        </Typography>
+        <Typography
+          variant="h6"
+          gutterBottom
+        >
+          Login
         </Typography>
 
         <Box
@@ -75,42 +69,22 @@ export default function RegisterPage() {
           sx={{ mt: 2 }}
         >
           <TextField
-            name="firstName"
-            label="First Name"
-            fullWidth
-            required
-            margin="normal"
-            value={formData.firstName}
-            onChange={handleChange}
-          />
-          <TextField
-            name="lastName"
-            label="Last Name"
-            fullWidth
-            required
-            margin="normal"
-            value={formData.lastName}
-            onChange={handleChange}
-          />
-          <TextField
-            name="email"
             label="Email"
-            type="email"
             fullWidth
             required
             margin="normal"
-            value={formData.email}
-            onChange={handleChange}
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
           <TextField
-            name="password"
             label="Password"
-            type="password"
             fullWidth
             required
             margin="normal"
-            value={formData.password}
-            onChange={handleChange}
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
 
           {error && (
@@ -130,7 +104,7 @@ export default function RegisterPage() {
               fullWidth
               disabled={loading}
             >
-              Register
+              Login
             </Button>
             {loading && (
               <CircularProgress
@@ -146,13 +120,6 @@ export default function RegisterPage() {
             )}
           </Box>
         </Box>
-        <Link
-          sx={{ mt: 2, display: "block" }}
-          component={RouterLink}
-          to="/login"
-        >
-          Log In
-        </Link>
       </Paper>
     </Container>
   );

@@ -51,6 +51,10 @@ public class ItemService {
         )).stream().map(this::mapToDto).toList();
     }
 
+    public List<ItemDto> getItemsPending() {
+        return itemRepository.findByStatus(ItemStatus.CLAIMED).stream().map(this::mapToDto).toList();
+    }
+
     public List<ItemDto> getItemsByFilledBy(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
         return itemRepository.findByFilledBy(user).stream().map(this::mapToDto).toList();
@@ -160,7 +164,7 @@ public class ItemService {
         return mapToDto(itemRepository.save(item));
     }
 
-    public ItemDto patchItem(Long id, ItemDto itemDto) {
+    public ItemDto patchItem(Long id, ItemDto itemDto, boolean isAdmin) {
         Item item = itemRepository.findById(id).orElseThrow(() -> new ItemNotFoundException(id));
         if (itemDto.getName() != null) item.setName(itemDto.getName());
         if (itemDto.getDescription() != null) item.setDescription(itemDto.getDescription());
@@ -168,18 +172,22 @@ public class ItemService {
         if (itemDto.getDateReported() != null) item.setDateReported(itemDto.getDateReported());
         if (itemDto.getStatus() != null) item.setStatus(itemDto.getStatus());
 
-        if (itemDto.getClaimedByUserId() != null) {
-            if (itemDto.getDateClaimed() == null) {
-                throw new IllegalArgumentException("dateClaimed must be provided when claiming an item.");
+        if (isAdmin) {
+            if (itemDto.getStatus() != null) item.setStatus(itemDto.getStatus());
+
+            if (itemDto.getClaimedByUserId() != null) {
+                if (itemDto.getDateClaimed() == null) {
+                    throw new IllegalArgumentException("dateClaimed must be provided when claiming an item.");
+                }
+
+                User claimant = userRepository.findById(itemDto.getClaimedByUserId()).orElseThrow(() -> new IllegalArgumentException("Claiming user not found"));
+                item.setClaimedBy(claimant);
+                item.setDateClaimed(itemDto.getDateClaimed());
+
+            } else {
+                item.setClaimedBy(null);
+                item.setDateClaimed(null);
             }
-
-            User claimant = userRepository.findById(itemDto.getClaimedByUserId()).orElseThrow(() -> new IllegalArgumentException("Claiming user not found"));
-            item.setClaimedBy(claimant);
-            item.setDateClaimed(itemDto.getDateClaimed());
-
-        } else {
-            item.setClaimedBy(null);
-            item.setDateClaimed(null);
         }
 
         return mapToDto(itemRepository.save(item));
